@@ -2,6 +2,8 @@ from functools import lru_cache
 from typing import Dict
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import FileResponse
+import os
 
 from .config import Settings, get_settings
 from .clients.irctc_client import IRCTCClient
@@ -58,3 +60,11 @@ def post_what_if(req: WhatIfRequest) -> OptimizeResponse:
 		return optimize_schedule(base)
 	except Exception as exc:  # noqa: BLE001
 		raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/download/zip")
+def download_zip() -> FileResponse:
+	zip_path = "/workspace/aittos_project.zip"
+	if not os.path.exists(zip_path):
+		raise HTTPException(status_code=404, detail="Bundle not found. Create the zip first.")
+	return FileResponse(zip_path, media_type="application/zip", filename="aittos_project.zip")
